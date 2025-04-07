@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Batch Processing Results</title>
+</head>
+<body>
+    <h2>Batch Processing Results:</h2>
+    {% for result in results %}
+        {% if result.error %}
+            <p style="color:red;">Error: {{ result.error }}</p>
+        {% elif result.processing %}
+            <p>Processing...</p>
+        {% else %}
+            <p>{{ result.filename }}</p>
+            <img src="{{ url_for('static', filename='results/' + result.filename) }}" width="300">
+        {% endif %}
+    {% endfor %}
+</body>
+</html>

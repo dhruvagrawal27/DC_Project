@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Images</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .form-group { margin-bottom: 1rem; }
+    .error { color: red; }
+    #resize-options { display: none; }
+    .thumbnail { height: 100px; margin: 5px; border: 1px solid #ccc; padding: 3px; }
+  </style>
+</head>
+<body>
+
+<h2>Upload Images for Processing</h2>
+
+<form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+  
+  <div class="form-group">
+    <label>Select Images (Max 5MB each):</label><br>
+    <input type="file" name="images" accept="image/*" multiple required>
+  </div>
+
+  <div class="form-group">
+    <label>Choose Processing Type:</label><br>
+    <input type="radio" id="resize" name="process_type" value="resize" checked>
+    <label for="resize">Resize</label><br>
+
+    <input type="radio" id="grayscale" name="process_type" value="grayscale">
+    <label for="grayscale">Grayscale</label><br>
+
+    <input type="radio" id="blur" name="process_type" value="blur">
+    <label for="blur">Blur</label>
+  </div>
+
+  <div id="resize-options" class="form-group">
+    <label>Resize Options:</label><br>
+    Width: <input type="number" name="width" min="1" max="2000">
+    Height: <input type="number" name="height" min="1" max="2000">
+  </div>
+
+  <div id="preview" class="form-group"></div>
+
+  <button type="submit">Upload</button>
+  <div id="error" class="error"></div>
+
+</form>
+
+<script>
+const form = document.getElementById('uploadForm');
+const previewDiv = document.getElementById('preview');
+const errorDiv = document.getElementById('error');
+const fileInput = document.querySelector('input[name="images"]');
+const resizeOptions = document.getElementById('resize-options');
+
+// Show/hide resize options
+document.querySelectorAll('input[name="process_type"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    resizeOptions.style.display = radio.value === 'resize' ? 'block' : 'none';
+  });
+});
+
+// Thumbnail preview
+fileInput.addEventListener('change', () => {
+  previewDiv.innerHTML = '';
+  const files = fileInput.files;
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'thumbnail';
+        previewDiv.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+});
+
+// Form validation
+form.addEventListener('submit', function (e) {
+  errorDiv.innerText = '';
+  const files = fileInput.files;
+
+  if (files.length === 0) {
+    e.preventDefault();
+    errorDiv.innerText = 'Please select at least one image.';
+    return;
+  }
+
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) {
+      e.preventDefault();
+      errorDiv.innerText = 'Only image files are allowed.';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      e.preventDefault();
+      errorDiv.innerText = 'Each image must be less than 5MB.';
+      return;
+    }
+  }
+
+  const selectedType = document.querySelector('input[name="process_type"]:checked').value;
+  if (selectedType === 'resize') {
+    const width = form.width.value;
+    const height = form.height.value;
+    if (!width || !height || width < 1 || height < 1) {
+      e.preventDefault();
+      errorDiv.innerText = 'Please enter valid width and height for resizing.';
+      return;
+    }
+  }
+});
+</script>
+
+</body>
+</html>
