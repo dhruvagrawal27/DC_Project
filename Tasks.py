@@ -4,8 +4,8 @@ import base64
 import io
 import socket
 
-BROKER = 'redis://10.160.65.71:6379/0'
-BACKEND = 'redis://10.160.65.71:6379/0'
+BROKER = 'redis://192.168.29.221:6379/0'
+BACKEND = 'redis://192.168.29.221:6379/0'
 
 celery_app = Celery('Tasks', broker=BROKER, backend=BACKEND)
 
@@ -22,7 +22,7 @@ def process_image_task(encoded_image, filename, process_type, width, height):
             processed = img.convert("L")
         elif process_type == "blur":
             processed = img.filter(ImageFilter.BLUR)
-        elif process_type == "resize" and width and height:
+        elif process_type == "resize" and width and height and width != "0" and height != "0":
             processed = img.resize((int(width), int(height)))
         else:
             processed = img
