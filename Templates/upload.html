@@ -4,112 +4,469 @@
   <meta charset="UTF-8">
   <title>Upload Images</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    .form-group { margin-bottom: 1rem; }
-    .error { color: red; }
-    #resize-options { display: none; }
-    .thumbnail { height: 100px; margin: 5px; border: 1px solid #ccc; padding: 3px; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 2rem;
+      font-size: 2.2em;
+      text-align: center;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    label {
+      color: #34495e;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .radio-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.2rem;
+      margin: 1rem 0;
+    }
+
+    .radio-option {
+      position: relative;
+    }
+
+    .radio-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .radio-card {
+      background: #f8f9fa;
+      border: 2px solid #dfe6e9;
+      border-radius: 10px;
+      padding: 1.2rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100px;
+      justify-content: center;
+    }
+
+    .radio-option:hover .radio-card {
+      border-color: #3498db;
+      background: #f5faff;
+    }
+
+    .radio-option input[type="radio"]:checked + .radio-card {
+      border-color: #3498db;
+      background: #e3f2fd;
+    }
+
+    .icon {
+      font-size: 2em;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .option-name {
+      font-weight: 500;
+    }
+
+    .file-input-area {
+      border: 3px dashed #bdc3c7;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.2s ease;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .file-input-area:hover {
+      border-color: #3498db;
+      background: #f5faff;
+    }
+
+    .file-input-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .file-input-container input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .custom-file-button {
+      background: #3498db;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .custom-file-button:hover {
+      background: #2980b9;
+      box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+    }
+
+    .file-info {
+      margin-top: 0.8rem;
+      color: #7f8c8d;
+    }
+
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 12px;
+      min-height: 120px;
+      justify-content: center;
+    }
+
+    .thumbnail {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .thumbnail:hover {
+      transform: scale(1.05);
+    }
+
+    #resize-options {
+      display: none;
+      background: #e3f2fd;
+      padding: 1.2rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+
+    .dimension-inputs {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .dimension-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .dimension-input input {
+      padding: 0.6rem;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      width: 120px;
+    }
+
+    button[type="submit"] {
+      background: #3498db;
+      color: white;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    button[type="submit"]:hover {
+      background: #2980b9;
+      box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+    }
+
+    .error {
+      color: #e74c3c;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: #fdedec;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .error.active {
+      display: block;
+    }
+    
+    @media (max-width: 600px) {
+      .form-container {
+        padding: 1.5rem;
+      }
+      
+      .radio-group {
+        grid-template-columns: 1fr;
+      }
+      
+      .dimension-inputs {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
   </style>
 </head>
 <body>
-
-<h2>Upload Images for Processing</h2>
-
-<form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
-  
-  <div class="form-group">
-    <label>Select Images (Max 5MB each):</label><br>
-    <input type="file" name="images" accept="image/*" multiple required>
+  <div class="form-container">
+    <h2>Upload Images for Processing</h2>
+    
+    <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Select Images (Max 5MB each)</label>
+        <div class="file-input-area">
+          <div class="file-input-container">
+            <input type="file" name="images" accept="image/*" multiple required id="fileInput">
+            <div class="custom-file-button">
+              <span>📁</span> Choose Files
+            </div>
+          </div>
+          <div class="file-info">
+            <span id="fileCount">No files selected</span>
+          </div>
+          <p>or drag and drop images here</p>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Choose Processing Type</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="resize" name="process_type" value="resize" checked>
+            <label for="resize" class="radio-card">
+              <span class="icon">📐</span>
+              <span class="option-name">Resize</span>
+            </label>
+          </div>
+          
+          <div class="radio-option">
+            <input type="radio" id="grayscale" name="process_type" value="grayscale">
+            <label for="grayscale" class="radio-card">
+              <span class="icon">🎨</span>
+              <span class="option-name">Grayscale</span>
+            </label>
+          </div>
+          
+          <div class="radio-option">
+            <input type="radio" id="blur" name="process_type" value="blur">
+            <label for="blur" class="radio-card">
+              <span class="icon">🔍</span>
+              <span class="option-name">Blur</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div id="resize-options" class="form-group">
+        <label>Resize Options</label>
+        <div class="dimension-inputs">
+          <div class="dimension-input">
+            <label for="width">Width</label>
+            <input type="number" id="width" name="width" min="1" max="2000" placeholder="px">
+          </div>
+          <div class="dimension-input">
+            <label for="height">Height</label>
+            <input type="number" id="height" name="height" min="1" max="2000" placeholder="px">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Image Preview</label>
+        <div id="preview"></div>
+      </div>
+      
+      <button type="submit">Process Images</button>
+      
+      <div id="error" class="error"></div>
+    </form>
   </div>
 
-  <div class="form-group">
-    <label>Choose Processing Type:</label><br>
-    <input type="radio" id="resize" name="process_type" value="resize" checked>
-    <label for="resize">Resize</label><br>
-    <input type="radio" id="grayscale" name="process_type" value="grayscale">
-    <label for="grayscale">Grayscale</label><br>
-    <input type="radio" id="blur" name="process_type" value="blur">
-    <label for="blur">Blur</label>
-  </div>
+  <script>
+    const form = document.getElementById('uploadForm');
+    const previewDiv = document.getElementById('preview');
+    const errorDiv = document.getElementById('error');
+    const fileInput = document.getElementById('fileInput');
+    const fileCount = document.getElementById('fileCount');
+    const resizeOptions = document.getElementById('resize-options');
 
-  <div id="resize-options" class="form-group">
-    <label>Resize Options:</label><br>
-    Width: <input type="number" name="width" min="1" max="2000">
-    Height: <input type="number" name="height" min="1" max="2000">
-  </div>
+    // Show/hide resize options
+    document.querySelectorAll('input[name="process_type"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        resizeOptions.style.display = radio.value === 'resize' ? 'block' : 'none';
+      });
+    });
 
-  <div id="preview" class="form-group"></div>
-
-  <button type="submit">Upload</button>
-  <div id="error" class="error"></div>
-
-</form>
-
-<script>
-const form = document.getElementById('uploadForm');
-const previewDiv = document.getElementById('preview');
-const errorDiv = document.getElementById('error');
-const fileInput = document.querySelector('input[name="images"]');
-const resizeOptions = document.getElementById('resize-options');
-
-// Show/hide resize options
-document.querySelectorAll('input[name="process_type"]').forEach((radio) => {
-  radio.addEventListener('change', () => {
-    resizeOptions.style.display = radio.value === 'resize' ? 'block' : 'none';
-  });
-});
-
-// Thumbnail preview
-fileInput.addEventListener('change', () => {
-  previewDiv.innerHTML = '';
-  const files = fileInput.files;
-  for (const file of files) {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'thumbnail';
-        previewDiv.appendChild(img);
-      };
-      reader.readAsDataURL(file);
+    // Update file count and display
+    fileInput.addEventListener('change', () => {
+      updateFileInfo();
+      updatePreview();
+    });
+    
+    function updateFileInfo() {
+      const files = fileInput.files;
+      if (files.length === 0) {
+        fileCount.textContent = 'No files selected';
+      } else if (files.length === 1) {
+        fileCount.textContent = '1 file selected';
+      } else {
+        fileCount.textContent = `${files.length} files selected`;
+      }
     }
-  }
-});
+    
+    // Thumbnail preview
+    function updatePreview() {
+      previewDiv.innerHTML = '';
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        previewDiv.innerHTML = '<p>No images to preview</p>';
+        return;
+      }
+      
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'thumbnail';
+            img.alt = file.name;
+            previewDiv.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
 
-// Form validation
-form.addEventListener('submit', function (e) {
-  errorDiv.innerText = '';
-  const files = fileInput.files;
-  if (files.length === 0) {
-    e.preventDefault();
-    errorDiv.innerText = 'Please select at least one image.';
-    return;
-  }
-  for (const file of files) {
-    if (!file.type.startsWith('image/')) {
+    // Form validation
+    form.addEventListener('submit', function (e) {
+      errorDiv.innerText = '';
+      errorDiv.classList.remove('active');
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        e.preventDefault();
+        errorDiv.innerText = 'Please select at least one image.';
+        errorDiv.classList.add('active');
+        return;
+      }
+      
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+          e.preventDefault();
+          errorDiv.innerText = 'Only image files are allowed.';
+          errorDiv.classList.add('active');
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          e.preventDefault();
+          errorDiv.innerText = 'Each image must be less than 5MB.';
+          errorDiv.classList.add('active');
+          return;
+        }
+      }
+      
+      const selectedType = document.querySelector('input[name="process_type"]:checked').value;
+      if (selectedType === 'resize') {
+        const width = form.width.value;
+        const height = form.height.value;
+        if (!width || !height || width < 1 || height < 1) {
+          e.preventDefault();
+          errorDiv.innerText = 'Please enter valid width and height for resizing.';
+          errorDiv.classList.add('active');
+          return;
+        }
+      }
+    });
+    
+    // Add drag and drop functionality
+    const dropArea = document.querySelector('.file-input-area');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
       e.preventDefault();
-      errorDiv.innerText = 'Only image files are allowed.';
-      return;
+      e.stopPropagation();
     }
-    if (file.size > 5 * 1024 * 1024) {
-      e.preventDefault();
-      errorDiv.innerText = 'Each image must be less than 5MB.';
-      return;
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropArea.style.borderColor = '#3498db';
+      dropArea.style.background = '#e3f2fd';
     }
-  }
-  const selectedType = document.querySelector('input[name="process_type"]:checked').value;
-  if (selectedType === 'resize') {
-    const width = form.width.value;
-    const height = form.height.value;
-    if (!width || !height || width < 1 || height < 1) {
-      e.preventDefault();
-      errorDiv.innerText = 'Please enter valid width and height for resizing.';
-      return;
+    
+    function unhighlight() {
+      dropArea.style.borderColor = '#bdc3c7';
+      dropArea.style.background = '#f8f9fa';
     }
-  }
-});
-</script>
-
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+      
+      // Update file info and preview
+      updateFileInfo();
+      updatePreview();
+    }
+  </script>
 </body>
 </html>

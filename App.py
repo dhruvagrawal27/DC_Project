@@ -1,9 +1,11 @@
+# === app.py ===
 from flask import Flask, request, redirect, url_for, render_template, jsonify
 from celery import Celery
-from Tasks import process_image_task
+from Tasks import process_image_task, generate_crc32
 import os
 import base64
 import uuid
+import redis
 
 app = Flask(__name__)
 
@@ -12,9 +14,10 @@ RESULT_FOLDER = 'static/results'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
-# Update these with the IP of your Redis host (Device 1)
-app.config['CELERY_BROKER_URL'] = 'redis://192.168.29.221:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://192.168.29.221:6379/0'
+app.config['CELERY_BROKER_URL'] = 'redis://10.160.68.133:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://10.160.68.133:6379/0'
+
+r = redis.Redis(host='10.160.68.133', port=6379)
 
 def make_celery(app):
     celery = Celery(
@@ -30,7 +33,6 @@ celery = make_celery(app)
 AVAILABLE_QUEUES = ['device1', 'device2']
 queue_counter = 0
 
-# In-memory job tracking dictionary
 job_db = {}
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -49,7 +51,6 @@ def upload():
 
         for file in files:
             filename = file.filename
-            # Create a unique filename to avoid collisions
             unique_filename = f"{uuid.uuid4().hex}_{filename}"
             filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
             file.save(filepath)
@@ -57,10 +58,11 @@ def upload():
             with open(filepath, "rb") as img_file:
                 encoded_image = base64.b64encode(img_file.read()).decode()
 
+            crc = generate_crc32(encoded_image)
+
             target_queue = AVAILABLE_QUEUES[queue_counter % len(AVAILABLE_QUEUES)]
             queue_counter += 1
 
-            # Generate a job_id (we also use this as the Celery task ID)
             job_id = str(uuid.uuid4())
             job_ids.append(job_id)
             job_db[job_id] = {
@@ -71,9 +73,10 @@ def upload():
                 "result_url": None
             }
 
-            # Dispatch task with the job_id as task_id
+            r.set(f"crc:{job_id}", crc)
+
             process_image_task.apply_async(
-                args=[encoded_image, unique_filename, process_type, width, height],
+                args=[encoded_image, unique_filename, process_type, width, height, job_id],
                 queue=target_queue,
                 task_id=job_id
             )
@@ -94,11 +97,16 @@ def batch_status(task_ids):
                 filename = result_data['filename']
                 image_base64 = result_data['image_base64']
 
+                # Validate CRC
+                original_crc = int(r.get(f"crc:{job_id}"))
+                current_crc = generate_crc32(image_base64)
+                if original_crc != current_crc:
+                    raise ValueError("CRC mismatch. Data integrity error.")
+
                 result_path = os.path.join(RESULT_FOLDER, filename)
                 with open(result_path, 'wb') as f:
                     f.write(base64.b64decode(image_base64))
 
-                # Update job info
                 job_db[job_id]["status"] = "done"
                 job_db[job_id]["result_url"] = f"/{result_path}"
                 results.append({"filename": filename})
@@ -119,3 +127,4 @@ def home():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
+
